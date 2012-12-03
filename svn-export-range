@@ -27,8 +27,6 @@ fi
 
 dir=~/tmp/`basename $(pwd)`-${revision[0]}:${revision[1]}
 
-nl=$'\n'
-
 while read line
 do
     operation=$(echo $line | cut -c 1)
