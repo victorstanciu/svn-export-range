@@ -19,7 +19,7 @@ shift $((OPTIND - 1))
 : ${revision:='0:HEAD'} # if revision parameter isn't set, use the widest possible revision interval, 0:HEAD
 revision=(${revision//:/ })
 
-url=`svn info | grep 'Repository Root:' | cut -d " " -f 3`
+url=`svn info | grep 'URL:' | cut -d " " -f 2`
 
 if [[ "${revision[1]}" -eq "HEAD" ]]; then
     revision[1]=`svn info $url | grep 'Revision:' | cut -d " " -f 2`
