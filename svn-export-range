@@ -1,0 +1,45 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]
+then
+    echo "Usage: `basename $0`"
+    exit 1
+fi
+
+revision= 
+while getopts r: opt
+do
+    case $opt in
+    r)
+        revision=$OPTARG
+    esac
+done
+shift $((OPTIND - 1))
+
+: ${revision:='0:HEAD'} # if revision parameter isn't set, use the widest possible revision interval, 0:HEAD
+revision=(${revision//:/ })
+
+url=`svn info | grep 'Repository Root:' | cut -d " " -f 3`
+
+if [[ "${revision[1]}" -eq "HEAD" ]]; then
+    revision[1]=`svn info $url | grep 'Revision:' | cut -d " " -f 2`
+fi
+
+dir=~/tmp/`basename $(pwd)`-${revision[0]}:${revision[1]}
+
+nl=$'\n'
+
+while read line
+do
+    operation=$(echo $line | cut -c 1)
+
+    if [[ "$operation" = "D" ]]; then
+        continue
+    fi
+
+    file=$(echo $line | cut -c 2- | sed 's/^ *//g')
+
+    mkdir -p $dir/$(dirname $file)
+
+    svn export --revision ${revision[1]} --force --depth empty $url/$file $dir/$file
+done < <(svn diff --summarize --revision ${revision[0]}:${revision[1]} . | awk '{ print $1, $2; }')
